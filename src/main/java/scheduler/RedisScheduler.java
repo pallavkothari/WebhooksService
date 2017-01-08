@@ -10,8 +10,9 @@ import redis.clients.jedis.Jedis;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static java.lang.Math.max;
 
 /**
  * Created by pallav.kothari on 1/6/17.
@@ -49,16 +50,18 @@ public class RedisScheduler {
 
     public void process() {
         long now = getMaxTimestampForDequeue();
+        long lastProcessed = 0;
         for (RedisTrigger redisTrigger : dequeue(now)) {
             try {
                 callouts.processNoThrow(redisTrigger);
             } finally {
-                if (redisTrigger.isRecurring()) {
-                    scheduleWithFixedDelay(redisTrigger);
+                lastProcessed = max(lastProcessed, redisTrigger.getScheduledTime());
+                if (redisTrigger.isRecurring() && redisTrigger.getNumRecurrences() > 1) {
+                    scheduleWithFixedDelay(redisTrigger.next());
                 }
             }
         }
-        clear(now);
+        clear(lastProcessed);
     }
 
     long getMaxTimestampForDequeue() {
@@ -71,8 +74,7 @@ public class RedisScheduler {
     List<RedisTrigger> dequeue(long maxScheduledTime) {
         try (Jedis jedis = redis.borrow()) {
             Set<String> items = jedis.zrangeByScore(getSchedulerKey(), defaultLookback(), maxScheduledTime);
-            Function<String, RedisTrigger> toTrigger = item -> GSON.fromJson(item, RedisTrigger.class);
-            return items.stream().map(toTrigger.andThen(RedisTrigger::next)).collect(Collectors.toList());
+            return  items.stream().map(item -> GSON.fromJson(item, RedisTrigger.class)).collect(Collectors.toList());
         }
     }
 

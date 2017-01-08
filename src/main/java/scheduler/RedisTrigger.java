@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
     private boolean isRecurring;
     private long delay;
     private TimeUnit timeUnit;
+    private int numRecurrences;
 
     public RedisTrigger() {
         // for deserialization
@@ -28,7 +29,7 @@ import java.util.concurrent.TimeUnit;
      * use this for one-off triggers (no recurrence)
      */
     public RedisTrigger(URL callback, String payload, long scheduledTime) {
-        this(callback, payload, scheduledTime, false, 0, null);
+        this(callback, payload, scheduledTime, false, 0, null, 1);
     }
 
     /**
@@ -36,16 +37,22 @@ import java.util.concurrent.TimeUnit;
      */
     public RedisTrigger(URL callback, String payload, long initialDelay, long delay, TimeUnit timeUnit) {
         this(callback, payload, System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(initialDelay, timeUnit),
-                true, delay, timeUnit);
+                true, delay, timeUnit, 1);
     }
 
-    private RedisTrigger(URL callback, String payload, long scheduledTime, boolean isRecurring, long delay, TimeUnit timeUnit) {
+    public RedisTrigger(URL callback, String payload, long initialDelay, long delay, TimeUnit timeUnit, int numRecurrences) {
+        this(callback, payload, System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(initialDelay, timeUnit),
+                true, delay, timeUnit, numRecurrences);
+    }
+
+    private RedisTrigger(URL callback, String payload, long scheduledTime, boolean isRecurring, long delay, TimeUnit timeUnit, int numRecurrences) {
         this.callback = callback;
         this.payload = payload;
         this.scheduledTime = scheduledTime;
         this.isRecurring = isRecurring;
         this.delay = delay;
         this.timeUnit = timeUnit;
+        this.numRecurrences = numRecurrences;
     }
 
     public URL getCallback() {
@@ -64,9 +71,17 @@ import java.util.concurrent.TimeUnit;
         return isRecurring;
     }
 
+    public int getNumRecurrences() {
+        return numRecurrences;
+    }
+
     public RedisTrigger next() {
         if (!isRecurring()) return this;
-        return new RedisTrigger(this.callback, this.payload, this.nextScheduledTime(), true, this.delay, this.timeUnit);
+        return new RedisTrigger(this.callback, this.payload, this.nextScheduledTime(), true, this.delay, this.timeUnit, this.nextNumRecurrences());
+    }
+
+    private int nextNumRecurrences() {
+        return !isRecurring ? this.numRecurrences : Math.max(0, this.numRecurrences - 1);
     }
 
     long nextScheduledTime() {
@@ -82,6 +97,7 @@ import java.util.concurrent.TimeUnit;
                 .add("isRecurring", isRecurring)
                 .add("delay", delay)
                 .add("timeUnit", timeUnit)
+                .add("numRecurrences", numRecurrences)
                 .toString();
     }
 
@@ -95,11 +111,12 @@ import java.util.concurrent.TimeUnit;
                 delay == that.delay &&
                 Objects.equals(callback, that.callback) &&
                 Objects.equals(payload, that.payload) &&
-                timeUnit == that.timeUnit;
+                timeUnit == that.timeUnit &&
+                numRecurrences == that.numRecurrences;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(callback, payload, scheduledTime, isRecurring, delay, timeUnit);
+        return Objects.hash(callback, payload, scheduledTime, isRecurring, delay, timeUnit, numRecurrences);
     }
 }

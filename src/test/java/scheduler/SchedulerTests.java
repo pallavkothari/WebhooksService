@@ -12,20 +12,26 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by pallav.kothari on 1/6/17.
  */
-public class Tests {
+public class SchedulerTests {
 
     private Redis redis = new Redis();
 
-    RedisScheduler scheduler = new RedisScheduler(new HttpCalloutService(), redis) {
+    private final HttpCalloutService callouts = mock(HttpCalloutService.class);
+    RedisScheduler scheduler = new RedisScheduler(callouts, redis) {
         @Override
         String getSchedulerKey() {
-            return Tests.class.getSimpleName();
+            return SchedulerTests.class.getSimpleName();
+        }
+
+        @Override
+        long getMaxTimestampForDequeue() {
+            return System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1);
         }
     };
 
@@ -35,7 +41,7 @@ public class Tests {
     }
 
     @Test
-    public void testNonRepeatedTrigger() throws MalformedURLException {
+    public void testDequeue() throws MalformedURLException {
         long triggerTime = System.currentTimeMillis();
         RedisTrigger trigger = new RedisTrigger(new URL("http://example.com"), "myPayload", triggerTime);
         scheduler.schedule(trigger);
@@ -44,7 +50,7 @@ public class Tests {
     }
 
     @Test
-    public void testDelaysForRepeatableTriggers() throws MalformedURLException {
+    public void testDequeueForRecurringTriggers() throws MalformedURLException {
         RedisTrigger trigger = new RedisTrigger(
                 new URL("http://example.com"),
                 "myPayload",
@@ -53,9 +59,32 @@ public class Tests {
         long time = trigger.getScheduledTime();
         List<RedisTrigger> dequeued = scheduler.dequeue(time);
         assertThat(dequeued.size(), is(1));
-        assertThat(dequeued.get(0), is(not(trigger)));
-        assertThat(dequeued.get(0).getScheduledTime(), is(trigger.nextScheduledTime()));
-        assertThat(dequeued.get(0), is(trigger.next()));
+        assertThat(dequeued.get(0), is(trigger));
+    }
+
+    @Test
+    public void testNext() throws MalformedURLException {
+        RedisTrigger trigger = new RedisTrigger(
+                new URL("http://example.com"),
+                "myPayload",
+                0, 10, TimeUnit.MINUTES, 2);
+        RedisTrigger next = trigger.next();
+        assertThat(next.getScheduledTime(), is(trigger.getScheduledTime() + TimeUnit.MINUTES.toMillis(10)));
+        assertThat(next.getNumRecurrences(), is(1));
+    }
+    @Test
+    public void testCalloutsForRecurringTasks() throws MalformedURLException {
+        RedisTrigger trigger = new RedisTrigger(new URL("http://example.com"), "myPayload", 0, 10, TimeUnit.MILLISECONDS, 3);
+        scheduler.scheduleWithFixedDelay(trigger);
+
+        for (int i = 0; i < 3; i++) {
+            scheduler.process();
+        }
+
+        for (int i = 0; i < 3; i++) {
+            verify(callouts).processNoThrow(eq(trigger));
+            trigger = trigger.next();
+        }
     }
 
     @Test

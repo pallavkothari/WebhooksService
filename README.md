@@ -2,7 +2,7 @@
 
 This is a redis-backed Scheduler-as-a-Service, which allows one to submit scheduled jobs and get callbacks at the scheduled times. 
 
-Jobs can be POST-ed at the ```/schedule``` rest endpoint.
+Jobs can be POST-ed at the `/schedule` rest endpoint.
 
 The wire format for a one-off scheduled job: 
 
@@ -15,7 +15,7 @@ The wire format for a one-off scheduled job:
 ```
 .. where scheduledTime is in milliseconds since epoch. 
 
-Jobs are stored in redis, and scanned every second. Once a job is triggered, you'll get a callback with the given payload. Simple. 
+Jobs are stored in redis, and scanned every second. Once a job is triggered, you'll get a callback at the provided url with the given payload. Simple. 
 
 Scheduling recurring jobs is also supported, in the java fixed-delay ScheduledExecutorService style (not arbitrary cron expressions). 
 Provide the additional recurrence information using the same rest endpoint:
@@ -31,4 +31,15 @@ Provide the additional recurrence information using the same rest endpoint:
 }
 ```
 
-That's all folks. 
+Optionally, you can cap the number of recurrences with the `numRecurrences` field
+
+---
+### Setup
+Requires redis, so make sure it's either running locally on port 6379, or set the ```REDIS_URL``` environment variable pointing to a remote redis. 
+
+To run locally, just do:
+```
+mvn install 
+sh target/bin/scheduler
+```
+

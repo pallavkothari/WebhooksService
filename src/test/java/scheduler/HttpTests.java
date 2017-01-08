@@ -8,9 +8,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -18,12 +19,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -31,7 +35,7 @@ import static org.mockito.Mockito.verify;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class FuncTests {
+public class HttpTests {
     private static OkHttpClient client = new OkHttpClient();
     private static Gson gson = new GsonBuilder().serializeNulls().create();
     @LocalServerPort private int localServerPort;
@@ -40,15 +44,29 @@ public class FuncTests {
     @SpyBean
     private RedisScheduler scheduler;
 
-    @MockBean
+    @SpyBean
     private HttpCalloutService calloutService;
 
+    @SpyBean
+    private Callback callback;
+
+    private CountDownLatch latch;
+
     @Before
-    public void setup() {
+    public void setup() throws IOException {
+        latch = new CountDownLatch(1);
+
         given(this.scheduler.getSchedulerKey())
-                .willReturn(FuncTests.class.getSimpleName());
+                .willReturn(HttpTests.class.getSimpleName());
         given(this.scheduler.getMaxTimestampForDequeue())
                 .willReturn(dequeueTimestamp);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                latch.countDown();
+                return null;
+            }
+        }).when(callback).onResponse(any(), any());
     }
 
     @After
@@ -58,7 +76,7 @@ public class FuncTests {
 
 
     @Test
-    public void scheduleSomething() throws IOException {
+    public void scheduleSomething() throws IOException, InterruptedException {
         RedisTrigger reqTrigger = trigger();
         Request req = new Request.Builder()
                 .url(scheduleUrl())
@@ -82,13 +100,15 @@ public class FuncTests {
             scheduler.process();
             verify(calloutService).processNoThrow(eq(reqTrigger));
             verify(scheduler).clear(eq(dequeueTimestamp));
+
+            latch.await(5, TimeUnit.SECONDS);
         }
     }
 
     private RedisTrigger trigger() {
         try {
             RedisTrigger trigger = new RedisTrigger(
-                    new URL("http://localhost:8080/callback"),
+                    new URL(String.format("http://localhost:%d/callback", localServerPort)),
                     "myPayload",
                     dequeueTimestamp);
             return trigger;

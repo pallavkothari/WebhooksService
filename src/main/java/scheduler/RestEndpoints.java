@@ -22,4 +22,8 @@ public class RestEndpoints {
         String queue = scheduler.schedule(trigger);
         return trigger;
     }
+
+    @RequestMapping(value = "/callback", method = RequestMethod.POST)
+    public void callback(@RequestBody String payload) {
+    }
 }
