@@ -1,23 +1,16 @@
 package scheduler;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import okhttp3.*;
+import okhttp3.Callback;
+import okhttp3.ResponseBody;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.boot.context.embedded.LocalServerPort;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -33,12 +26,7 @@ import static org.mockito.Mockito.verify;
 /**
  * Created by pallav.kothari on 1/7/17.
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class HttpTests {
-    private static OkHttpClient client = new OkHttpClient();
-    private static Gson gson = new GsonBuilder().serializeNulls().create();
-    @LocalServerPort private int localServerPort;
+public class HttpTests extends BaseHttpTests {
     private long dequeueTimestamp = System.currentTimeMillis();
 
     @SpyBean
@@ -77,14 +65,8 @@ public class HttpTests {
 
     @Test
     public void scheduleSomething() throws IOException, InterruptedException {
-        RedisTrigger reqTrigger = trigger();
-        Request req = new Request.Builder()
-                .url(scheduleUrl())
-                .post(RequestBody.create(mediaType(), gson.toJson(reqTrigger)))
-                .build();
-
-        Response response = client.newCall(req).execute();
-        try (ResponseBody body = response.body()) {
+        RedisTrigger reqTrigger = new RedisTrigger(callbackUrl(), "myPayload", dequeueTimestamp);
+        try (ResponseBody body = schedule(reqTrigger).body()) {
             RedisTrigger respTrigger = gson.fromJson(body.string(), RedisTrigger.class);
             assertThat(reqTrigger, is(respTrigger));
 
@@ -103,25 +85,5 @@ public class HttpTests {
 
             latch.await(5, TimeUnit.SECONDS);
         }
-    }
-
-    private RedisTrigger trigger() {
-        try {
-            RedisTrigger trigger = new RedisTrigger(
-                    new URL(String.format("http://localhost:%d/callback", localServerPort)),
-                    "myPayload",
-                    dequeueTimestamp);
-            return trigger;
-        } catch (MalformedURLException e) {
-            throw new Error(e);
-        }
-    }
-
-    private String scheduleUrl() {
-        return String.format("http://localhost:%d/schedule", localServerPort);
-    }
-
-    private MediaType mediaType() {
-        return MediaType.parse("application/json");
     }
 }
