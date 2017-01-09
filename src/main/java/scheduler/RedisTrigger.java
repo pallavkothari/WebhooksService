@@ -22,7 +22,9 @@ import java.util.concurrent.TimeUnit;
     private int numRecurrences;
 
     public RedisTrigger() {
-        // for deserialization
+        // defaults for deserialization
+        this.numRecurrences = 1;
+        this.scheduledTime = System.currentTimeMillis();
     }
 
     /**
@@ -35,14 +37,12 @@ import java.util.concurrent.TimeUnit;
     /**
      * use this for recurring triggers
      */
-    public RedisTrigger(URL callback, String payload, long initialDelay, long delay, TimeUnit timeUnit) {
-        this(callback, payload, System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(initialDelay, timeUnit),
-                true, delay, timeUnit, 1);
+    public RedisTrigger(URL callback, String payload, long delay, TimeUnit timeUnit) {
+        this(callback, payload, System.currentTimeMillis(), true, delay, timeUnit, 1);
     }
 
-    public RedisTrigger(URL callback, String payload, long initialDelay, long delay, TimeUnit timeUnit, int numRecurrences) {
-        this(callback, payload, System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(initialDelay, timeUnit),
-                true, delay, timeUnit, numRecurrences);
+    public RedisTrigger(URL callback, String payload, long delay, TimeUnit timeUnit, int numRecurrences) {
+        this(callback, payload, System.currentTimeMillis(), true, delay, timeUnit, numRecurrences);
     }
 
     private RedisTrigger(URL callback, String payload, long scheduledTime, boolean isRecurring, long delay, TimeUnit timeUnit, int numRecurrences) {

@@ -54,7 +54,7 @@ public class SchedulerTests {
         RedisTrigger trigger = new RedisTrigger(
                 new URL("http://example.com"),
                 "myPayload",
-                0, 10, TimeUnit.MINUTES);
+                10, TimeUnit.MINUTES);
         scheduler.scheduleWithFixedDelay(trigger);
         long time = trigger.getScheduledTime();
         List<RedisTrigger> dequeued = scheduler.dequeue(time);
@@ -67,14 +67,14 @@ public class SchedulerTests {
         RedisTrigger trigger = new RedisTrigger(
                 new URL("http://example.com"),
                 "myPayload",
-                0, 10, TimeUnit.MINUTES, 2);
+                10, TimeUnit.MINUTES, 2);
         RedisTrigger next = trigger.next();
         assertThat(next.getScheduledTime(), is(trigger.getScheduledTime() + TimeUnit.MINUTES.toMillis(10)));
         assertThat(next.getNumRecurrences(), is(1));
     }
     @Test
     public void testCalloutsForRecurringTasks() throws MalformedURLException {
-        RedisTrigger trigger = new RedisTrigger(new URL("http://example.com"), "myPayload", 0, 10, TimeUnit.MILLISECONDS, 3);
+        RedisTrigger trigger = new RedisTrigger(new URL("http://example.com"), "myPayload", 10, TimeUnit.MILLISECONDS, 3);
         scheduler.scheduleWithFixedDelay(trigger);
 
         for (int i = 0; i < 3; i++) {

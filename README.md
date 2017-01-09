@@ -8,12 +8,10 @@ The wire format for a one-off scheduled job:
 
 ```
 {  
-   callback= http://localhost:8080/callback,
-   payload={myPayload=probablyJsonButWhateverYouWantIsFine},
-   scheduledTime=1483832309634
+    "callback" : "http://localhost:8080/callback",
+    "payload" : "foo"
 }
 ```
-.. where scheduledTime is in milliseconds since epoch. 
 
 Jobs are stored in redis, and scanned every second. Once a job is triggered, you'll get a callback at the provided url with the given payload. Simple. 
 
@@ -22,17 +20,15 @@ Provide the additional recurrence information using the same rest endpoint:
 
 ```
 {
-    callback=http://localhost:8080/callback, 
-    payload={foo=bar}, 
-    isRecurring=true,
-    initialDelay=0,
-    delay=1, 
-    timeUnit=SECONDS, 
-    numRecurrences=3
+	"callback" : "http://localhost:8080/callback",
+	"payload" : "foo",
+	"isRecurring" : true,
+	"delay" : 1, 
+	"timeUnit" : "SECONDS",
+	"numRecurrences" : 2
 }
 ```
 
-Optionally, you can leave out `numRecurrences` for infinite recursion.
 
 ---
 ### Setup
@@ -44,11 +40,25 @@ mvn install
 sh target/bin/scheduler
 ```
 
-
-If you ran mvn install above, it included a quick demo. Sample output: 
+Try it out: 
 ```
-*** demo : Scheduling trigger to fire in 5 seconds at Sun Jan 08 18:40:11 PST 2017
-*** demo : callback acked at Sun Jan 08 18:40:12 PST 2017
+curl -X POST -H "Content-Type: application/json" -d '{
+	"callback" : "http://localhost:8080/callback",
+	"payload" : "foo"
+}' "http://localhost:8080/schedule"
 ```
 
-You can replicate this manually by running `mvn -Dtest=ProcessorTest#demo test`
+Or a recurring job:
+
+```
+curl -X POST -H "Content-Type: application/json"  -d '{
+	"callback" : "http://localhost:8080/callback",
+	"payload" : "foo",
+	"isRecurring" : true,
+	"delay" : 1, 
+	"timeUnit" : "SECONDS",
+	"numRecurrences" : 2
+}' "http://localhost:8080/schedule"
+```
+
+The logs will contain output from the test callback endpoint (per execution): `payload = foo`

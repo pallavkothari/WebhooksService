@@ -10,9 +10,6 @@ import org.mockito.stubbing.Answer;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -53,22 +50,11 @@ public class ProcessorTest extends BaseHttpTests {
 
     @Test
     public void testProcessorIsFiring() throws Exception {
-        RedisTrigger trigger = new RedisTrigger(callbackUrl(), "foo", 0, 1, TimeUnit.SECONDS, 3);
+        RedisTrigger trigger = new RedisTrigger(callbackUrl(), "foo", 1, TimeUnit.SECONDS, 3);
         try (ResponseBody body = schedule(trigger).body()) {
             RedisTrigger respTrigger = gson.fromJson(body.string(), RedisTrigger.class);
             assertThat(trigger, is(respTrigger));
         }
         assertTrue(processorTestLatch.await(5, TimeUnit.SECONDS));
-    }
-
-    @Test
-    public void demo() throws Exception {
-        Calendar cal = new GregorianCalendar();
-        cal.add(Calendar.SECOND, 5);
-        System.out.println("*** demo : Scheduling trigger to fire in 5 seconds at " + cal.getTime());
-        RedisTrigger trigger = new RedisTrigger(callbackUrl(), "foo", cal.getTimeInMillis());
-        try (ResponseBody body = schedule(trigger).body()) {}
-        assertTrue(demoLatch.await(7, TimeUnit.SECONDS));
-        System.out.println("*** demo : callback acked at " + new Date());
     }
 }

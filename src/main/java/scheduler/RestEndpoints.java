@@ -25,6 +25,7 @@ public class RestEndpoints {
 
     @RequestMapping(value = "/callback", method = RequestMethod.POST)
     public String callback(@RequestBody String payload) {
+        System.out.println("payload = " + payload);
         return payload;
     }
 }
