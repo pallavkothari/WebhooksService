@@ -23,15 +23,16 @@ Provide the additional recurrence information using the same rest endpoint:
 ```
 {
     callback=http://localhost:8080/callback, 
-    payload=myPayload, 
-    scheduledTime=1483832783215, 
-    isRecurring=true, 
-    delay=10, 
-    timeUnit=MINUTES
+    payload={foo=bar}, 
+    isRecurring=true,
+    initialDelay=0,
+    delay=1, 
+    timeUnit=SECONDS, 
+    numRecurrences=3
 }
 ```
 
-Optionally, you can cap the number of recurrences with the `numRecurrences` field
+Optionally, you can leave out `numRecurrences` for infinite recursion.
 
 ---
 ### Setup
