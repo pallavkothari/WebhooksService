@@ -46,7 +46,10 @@ public class ProcessorTest extends BaseHttpTests {
     @Test
     public void testProcessorIsFiring() throws Exception {
         RedisTrigger trigger = new RedisTrigger(callbackUrl(), "foo", 0, 1, TimeUnit.SECONDS, 3);
-        try (ResponseBody body = schedule(trigger).body()) {}
+        try (ResponseBody body = schedule(trigger).body()) {
+            RedisTrigger respTrigger = gson.fromJson(body.string(), RedisTrigger.class);
+            assertThat(trigger, is(respTrigger));
+        }
         assertTrue(latch.await(5, TimeUnit.SECONDS));
     }
 }
