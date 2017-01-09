@@ -1,6 +1,7 @@
 package scheduler;
 
 import okhttp3.Callback;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +13,8 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -32,6 +35,8 @@ public class ProcessorTest extends BaseHttpTests {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
+                Response response = (Response) invocation.getArguments()[1];
+                assertThat(response.body().string(), is("foo"));
                 latch.countDown();
                 return null;
             }
