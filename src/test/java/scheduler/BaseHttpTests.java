@@ -17,7 +17,7 @@ import java.net.URL;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class BaseHttpTests {
+public abstract class BaseHttpTests {
 
     protected static Gson gson = new GsonBuilder().serializeNulls().create();
     private static OkHttpClient client = new OkHttpClient();

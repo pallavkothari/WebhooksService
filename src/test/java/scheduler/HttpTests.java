@@ -60,7 +60,7 @@ public class HttpTests extends BaseHttpTests {
 
     @After
     public void tearDown() {
-        scheduler.clear(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(100));
+        scheduler.clear(dequeueTimestamp);
     }
 
 

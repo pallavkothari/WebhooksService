@@ -43,3 +43,11 @@ mvn install
 sh target/bin/scheduler
 ```
 
+
+If you ran mvn install above, it included a quick demo. Sample output: 
+```
+*** demo : Scheduling trigger to fire in 5 seconds at Sun Jan 08 18:40:11 PST 2017
+*** demo : callback acked at Sun Jan 08 18:40:12 PST 2017
+```
+
+You can replicate this manually by running `mvn -Dtest=ProcessorTest#demo test`
