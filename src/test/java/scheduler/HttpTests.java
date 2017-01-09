@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -83,7 +84,7 @@ public class HttpTests extends BaseHttpTests {
             verify(calloutService).processNoThrow(eq(reqTrigger));
             verify(scheduler).clear(eq(dequeueTimestamp));
 
-            latch.await(5, TimeUnit.SECONDS);
+            assertTrue(latch.await(5, TimeUnit.SECONDS));
         }
     }
 }
