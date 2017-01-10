@@ -21,11 +21,11 @@ public class HttpCalloutService {
         this.callback = callback;
     }
 
-    public void processNoThrow(RedisTrigger redisTrigger) {
+    public void processNoThrow(Webhook webhook) {
         try {
             Request request = new Request.Builder()
-                    .url(redisTrigger.getCallback())
-                    .post(RequestBody.create(mediaType, redisTrigger.getPayload()))
+                    .url(webhook.getUrl())
+                    .post(RequestBody.create(mediaType, webhook.getPayload()))
                     .addHeader(CONTENT_TYPE, APPLICATION_JSON)
                     .build();
             client.newCall(request).enqueue(callback);

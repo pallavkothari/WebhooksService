@@ -18,9 +18,10 @@ public class RestEndpoints {
     }
 
     @RequestMapping(value="/schedule", method = RequestMethod.POST)
-    public @ResponseBody RedisTrigger schedule(@RequestBody RedisTrigger trigger) {
-        String queue = scheduler.schedule(trigger);
-        return trigger;
+    public @ResponseBody
+    Webhook schedule(@RequestBody Webhook webhook) {
+        String queue = scheduler.schedule(webhook);
+        return webhook;
     }
 
     @RequestMapping(value = "/callback", method = RequestMethod.POST)

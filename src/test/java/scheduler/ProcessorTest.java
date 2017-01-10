@@ -50,10 +50,10 @@ public class ProcessorTest extends BaseHttpTests {
 
     @Test
     public void testProcessorIsFiring() throws Exception {
-        RedisTrigger trigger = new RedisTrigger(callbackUrl(), "foo", 1, TimeUnit.SECONDS, 3);
-        try (ResponseBody body = schedule(trigger).body()) {
-            RedisTrigger respTrigger = gson.fromJson(body.string(), RedisTrigger.class);
-            assertThat(trigger, is(respTrigger));
+        Webhook webhook = new Webhook(callbackUrl(), "foo", 1, TimeUnit.SECONDS, 3);
+        try (ResponseBody body = schedule(webhook).body()) {
+            Webhook respWebhook = gson.fromJson(body.string(), Webhook.class);
+            assertThat(webhook, is(respWebhook));
         }
         assertTrue(processorTestLatch.await(5, TimeUnit.SECONDS));
     }

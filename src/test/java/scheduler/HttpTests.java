@@ -66,22 +66,22 @@ public class HttpTests extends BaseHttpTests {
 
     @Test
     public void scheduleSomething() throws IOException, InterruptedException {
-        RedisTrigger reqTrigger = new RedisTrigger(callbackUrl(), "myPayload", dequeueTimestamp);
-        try (ResponseBody body = schedule(reqTrigger).body()) {
-            RedisTrigger respTrigger = gson.fromJson(body.string(), RedisTrigger.class);
-            assertThat(reqTrigger, is(respTrigger));
+        Webhook req = new Webhook(callbackUrl(), "myPayload", dequeueTimestamp);
+        try (ResponseBody body = schedule(req).body()) {
+            Webhook resp = gson.fromJson(body.string(), Webhook.class);
+            assertThat(req, is(resp));
 
             // now make sure something was actually scheduled
-            verify(scheduler).schedule(eq(reqTrigger));
+            verify(scheduler).schedule(eq(req));
 
             // and also dequeue should work
-            List<RedisTrigger> scheduled = scheduler.dequeue(reqTrigger.getScheduledTime());
+            List<Webhook> scheduled = scheduler.dequeue(req.getScheduledTime());
             assertThat(scheduled.size(), is(1));
-            assertThat(scheduled, Matchers.contains(reqTrigger));
+            assertThat(scheduled, Matchers.contains(req));
 
             // when the queue is processed for realz, we expect a callout
             scheduler.process();
-            verify(calloutService).processNoThrow(eq(reqTrigger));
+            verify(calloutService).processNoThrow(eq(req));
             verify(scheduler).clear(eq(dequeueTimestamp));
 
             assertTrue(latch.await(5, TimeUnit.SECONDS));

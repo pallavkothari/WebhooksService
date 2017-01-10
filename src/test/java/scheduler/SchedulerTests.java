@@ -43,47 +43,47 @@ public class SchedulerTests {
     @Test
     public void testDequeue() throws MalformedURLException {
         long triggerTime = System.currentTimeMillis();
-        RedisTrigger trigger = new RedisTrigger(new URL("http://example.com"), "myPayload", triggerTime);
-        scheduler.schedule(trigger);
-        List<RedisTrigger> dequeued = scheduler.dequeue(triggerTime);
-        assertThat(dequeued.get(0), is(trigger));
+        Webhook webhook = new Webhook(new URL("http://example.com"), "myPayload", triggerTime);
+        scheduler.schedule(webhook);
+        List<Webhook> dequeued = scheduler.dequeue(triggerTime);
+        assertThat(dequeued.get(0), is(webhook));
     }
 
     @Test
-    public void testDequeueForRecurringTriggers() throws MalformedURLException {
-        RedisTrigger trigger = new RedisTrigger(
+    public void testDequeueForRecurringWebhooks() throws MalformedURLException {
+        Webhook webhook = new Webhook(
                 new URL("http://example.com"),
                 "myPayload",
                 10, TimeUnit.MINUTES);
-        scheduler.scheduleWithFixedDelay(trigger);
-        long time = trigger.getScheduledTime();
-        List<RedisTrigger> dequeued = scheduler.dequeue(time);
+        scheduler.scheduleWithFixedDelay(webhook);
+        long time = webhook.getScheduledTime();
+        List<Webhook> dequeued = scheduler.dequeue(time);
         assertThat(dequeued.size(), is(1));
-        assertThat(dequeued.get(0), is(trigger));
+        assertThat(dequeued.get(0), is(webhook));
     }
 
     @Test
     public void testNext() throws MalformedURLException {
-        RedisTrigger trigger = new RedisTrigger(
+        Webhook webhook = new Webhook(
                 new URL("http://example.com"),
                 "myPayload",
                 10, TimeUnit.MINUTES, 2);
-        RedisTrigger next = trigger.next();
-        assertThat(next.getScheduledTime(), is(trigger.getScheduledTime() + TimeUnit.MINUTES.toMillis(10)));
+        Webhook next = webhook.next();
+        assertThat(next.getScheduledTime(), is(webhook.getScheduledTime() + TimeUnit.MINUTES.toMillis(10)));
         assertThat(next.getNumRecurrences(), is(1));
     }
     @Test
     public void testCalloutsForRecurringTasks() throws MalformedURLException {
-        RedisTrigger trigger = new RedisTrigger(new URL("http://example.com"), "myPayload", 10, TimeUnit.MILLISECONDS, 3);
-        scheduler.scheduleWithFixedDelay(trigger);
+        Webhook webhook = new Webhook(new URL("http://example.com"), "myPayload", 10, TimeUnit.MILLISECONDS, 3);
+        scheduler.scheduleWithFixedDelay(webhook);
 
         for (int i = 0; i < 3; i++) {
             scheduler.process();
         }
 
         for (int i = 0; i < 3; i++) {
-            verify(callouts).processNoThrow(eq(trigger));
-            trigger = trigger.next();
+            verify(callouts).processNoThrow(eq(webhook));
+            webhook = webhook.next();
         }
     }
 

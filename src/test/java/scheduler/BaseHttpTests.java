@@ -27,10 +27,10 @@ public abstract class BaseHttpTests {
         return String.format("http://localhost:%d/schedule", localServerPort);
     }
 
-    protected Response schedule(RedisTrigger reqTrigger) throws IOException {
+    protected Response schedule(Webhook webhook) throws IOException {
         Request req = new Request.Builder()
                 .url(scheduleUrl())
-                .post(RequestBody.create(MediaType.parse("application/json"), gson.toJson(reqTrigger)))
+                .post(RequestBody.create(MediaType.parse("application/json"), gson.toJson(webhook)))
                 .build();
 
         return client.newCall(req).execute();

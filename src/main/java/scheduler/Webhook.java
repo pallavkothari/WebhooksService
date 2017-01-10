@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by pallav.kothari on 1/6/17.
  */
- class RedisTrigger {
+ class Webhook {
 
     private URL callback;
     private String payload;
@@ -21,31 +21,31 @@ import java.util.concurrent.TimeUnit;
     private TimeUnit timeUnit;
     private int numRecurrences;
 
-    public RedisTrigger() {
+    public Webhook() {
         // defaults for deserialization
         this.numRecurrences = 1;
         this.scheduledTime = System.currentTimeMillis();
     }
 
     /**
-     * use this for one-off triggers (no recurrence)
+     * use this for one-off webhooks (no recurrence)
      */
-    public RedisTrigger(URL callback, String payload, long scheduledTime) {
+    public Webhook(URL callback, String payload, long scheduledTime) {
         this(callback, payload, scheduledTime, false, 0, null, 1);
     }
 
     /**
-     * use this for recurring triggers
+     * use this for recurring webhooks
      */
-    public RedisTrigger(URL callback, String payload, long delay, TimeUnit timeUnit) {
+    public Webhook(URL callback, String payload, long delay, TimeUnit timeUnit) {
         this(callback, payload, System.currentTimeMillis(), true, delay, timeUnit, 1);
     }
 
-    public RedisTrigger(URL callback, String payload, long delay, TimeUnit timeUnit, int numRecurrences) {
+    public Webhook(URL callback, String payload, long delay, TimeUnit timeUnit, int numRecurrences) {
         this(callback, payload, System.currentTimeMillis(), true, delay, timeUnit, numRecurrences);
     }
 
-    private RedisTrigger(URL callback, String payload, long scheduledTime, boolean isRecurring, long delay, TimeUnit timeUnit, int numRecurrences) {
+    private Webhook(URL callback, String payload, long scheduledTime, boolean isRecurring, long delay, TimeUnit timeUnit, int numRecurrences) {
         this.callback = callback;
         this.payload = payload;
         this.scheduledTime = scheduledTime;
@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
         this.numRecurrences = numRecurrences;
     }
 
-    public URL getCallback() {
+    public URL getUrl() {
         return callback;
     }
 
@@ -75,9 +75,9 @@ import java.util.concurrent.TimeUnit;
         return numRecurrences;
     }
 
-    public RedisTrigger next() {
+    public Webhook next() {
         if (!isRecurring()) return this;
-        return new RedisTrigger(this.callback, this.payload, this.nextScheduledTime(), true, this.delay, this.timeUnit, this.nextNumRecurrences());
+        return new Webhook(this.callback, this.payload, this.nextScheduledTime(), true, this.delay, this.timeUnit, this.nextNumRecurrences());
     }
 
     private int nextNumRecurrences() {
@@ -105,7 +105,7 @@ import java.util.concurrent.TimeUnit;
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        RedisTrigger that = (RedisTrigger) o;
+        Webhook that = (Webhook) o;
         return scheduledTime == that.scheduledTime &&
                 isRecurring == that.isRecurring &&
                 delay == that.delay &&

@@ -31,17 +31,17 @@ public class RedisScheduler {
         this.redis = redis;
     }
 
-    public String schedule(RedisTrigger trigger) {
+    public String schedule(Webhook webhook) {
         String schedulerKey = getSchedulerKey();
         try (Jedis jedis = redis.borrow()) {
-            jedis.zadd(schedulerKey, trigger.getScheduledTime(), GSON.toJson(trigger));
+            jedis.zadd(schedulerKey, webhook.getScheduledTime(), GSON.toJson(webhook));
         }
         return schedulerKey;
     }
 
-    public void scheduleWithFixedDelay(RedisTrigger trigger) {
-        Preconditions.checkState(trigger.isRecurring());
-        schedule(trigger);
+    public void scheduleWithFixedDelay(Webhook webhook) {
+        Preconditions.checkState(webhook.isRecurring());
+        schedule(webhook);
     }
 
     String getSchedulerKey() {
@@ -51,13 +51,13 @@ public class RedisScheduler {
     public void process() {
         long now = getMaxTimestampForDequeue();
         long lastProcessed = 0;
-        for (RedisTrigger redisTrigger : dequeue(now)) {
+        for (Webhook webhook : dequeue(now)) {
             try {
-                callouts.processNoThrow(redisTrigger);
+                callouts.processNoThrow(webhook);
             } finally {
-                lastProcessed = max(lastProcessed, redisTrigger.getScheduledTime());
-                if (redisTrigger.isRecurring() && redisTrigger.getNumRecurrences() > 1) {
-                    scheduleWithFixedDelay(redisTrigger.next());
+                lastProcessed = max(lastProcessed, webhook.getScheduledTime());
+                if (webhook.isRecurring() && webhook.getNumRecurrences() > 1) {
+                    scheduleWithFixedDelay(webhook.next());
                 }
             }
         }
@@ -69,12 +69,12 @@ public class RedisScheduler {
     }
 
     /**
-     * @return a list of triggers ready to be processed, and if repeatable, should be re-enqueued.
+     * @return a list of webhooks ready to be processed, and if repeatable, should be re-enqueued.
      */
-    List<RedisTrigger> dequeue(long maxScheduledTime) {
+    List<Webhook> dequeue(long maxScheduledTime) {
         try (Jedis jedis = redis.borrow()) {
             Set<String> items = jedis.zrangeByScore(getSchedulerKey(), defaultLookback(), maxScheduledTime);
-            return  items.stream().map(item -> GSON.fromJson(item, RedisTrigger.class)).collect(Collectors.toList());
+            return  items.stream().map(item -> GSON.fromJson(item, Webhook.class)).collect(Collectors.toList());
         }
     }
 
