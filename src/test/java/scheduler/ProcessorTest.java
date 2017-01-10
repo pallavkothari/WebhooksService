@@ -50,7 +50,7 @@ public class ProcessorTest extends BaseHttpTests {
 
     @Test
     public void testProcessorIsFiring() throws Exception {
-        Webhook webhook = new Webhook(callbackUrl(), "foo", 1, TimeUnit.SECONDS, 3);
+        Webhook webhook = new Webhook(testWebhookUrl(), "foo", 1, TimeUnit.SECONDS, 3);
         try (ResponseBody body = schedule(webhook).body()) {
             Webhook respWebhook = gson.fromJson(body.string(), Webhook.class);
             assertThat(webhook, is(respWebhook));

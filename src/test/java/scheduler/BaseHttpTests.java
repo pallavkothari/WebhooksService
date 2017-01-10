@@ -36,9 +36,9 @@ public abstract class BaseHttpTests {
         return client.newCall(req).execute();
     }
 
-    protected URL callbackUrl() {
+    protected URL testWebhookUrl() {
         try {
-            return new URL(String.format("http://localhost:%d/callback", localServerPort));
+            return new URL(String.format("http://localhost:%d/test-webhook", localServerPort));
         } catch (MalformedURLException e) {
             throw new Error(e);
         }

@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  */
  class Webhook {
 
-    private URL callback;
+    private URL url;
     private String payload;
     private long scheduledTime;   // millis since epoch
     private boolean isRecurring;
@@ -30,23 +30,23 @@ import java.util.concurrent.TimeUnit;
     /**
      * use this for one-off webhooks (no recurrence)
      */
-    public Webhook(URL callback, String payload, long scheduledTime) {
-        this(callback, payload, scheduledTime, false, 0, null, 1);
+    public Webhook(URL url, String payload, long scheduledTime) {
+        this(url, payload, scheduledTime, false, 0, null, 1);
     }
 
     /**
      * use this for recurring webhooks
      */
-    public Webhook(URL callback, String payload, long delay, TimeUnit timeUnit) {
-        this(callback, payload, System.currentTimeMillis(), true, delay, timeUnit, 1);
+    public Webhook(URL url, String payload, long delay, TimeUnit timeUnit) {
+        this(url, payload, System.currentTimeMillis(), true, delay, timeUnit, 1);
     }
 
-    public Webhook(URL callback, String payload, long delay, TimeUnit timeUnit, int numRecurrences) {
-        this(callback, payload, System.currentTimeMillis(), true, delay, timeUnit, numRecurrences);
+    public Webhook(URL url, String payload, long delay, TimeUnit timeUnit, int numRecurrences) {
+        this(url, payload, System.currentTimeMillis(), true, delay, timeUnit, numRecurrences);
     }
 
-    private Webhook(URL callback, String payload, long scheduledTime, boolean isRecurring, long delay, TimeUnit timeUnit, int numRecurrences) {
-        this.callback = callback;
+    private Webhook(URL url, String payload, long scheduledTime, boolean isRecurring, long delay, TimeUnit timeUnit, int numRecurrences) {
+        this.url = url;
         this.payload = payload;
         this.scheduledTime = scheduledTime;
         this.isRecurring = isRecurring;
@@ -56,7 +56,7 @@ import java.util.concurrent.TimeUnit;
     }
 
     public URL getUrl() {
-        return callback;
+        return url;
     }
 
     public String getPayload() {
@@ -77,7 +77,7 @@ import java.util.concurrent.TimeUnit;
 
     public Webhook next() {
         if (!isRecurring()) return this;
-        return new Webhook(this.callback, this.payload, this.nextScheduledTime(), true, this.delay, this.timeUnit, this.nextNumRecurrences());
+        return new Webhook(this.url, this.payload, this.nextScheduledTime(), true, this.delay, this.timeUnit, this.nextNumRecurrences());
     }
 
     private int nextNumRecurrences() {
@@ -91,7 +91,7 @@ import java.util.concurrent.TimeUnit;
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("callback", callback)
+                .add("url", url)
                 .add("payload", payload)
                 .add("scheduledTime", scheduledTime)
                 .add("isRecurring", isRecurring)
@@ -109,7 +109,7 @@ import java.util.concurrent.TimeUnit;
         return scheduledTime == that.scheduledTime &&
                 isRecurring == that.isRecurring &&
                 delay == that.delay &&
-                Objects.equals(callback, that.callback) &&
+                Objects.equals(url, that.url) &&
                 Objects.equals(payload, that.payload) &&
                 timeUnit == that.timeUnit &&
                 numRecurrences == that.numRecurrences;
@@ -117,6 +117,6 @@ import java.util.concurrent.TimeUnit;
 
     @Override
     public int hashCode() {
-        return Objects.hash(callback, payload, scheduledTime, isRecurring, delay, timeUnit, numRecurrences);
+        return Objects.hash(url, payload, scheduledTime, isRecurring, delay, timeUnit, numRecurrences);
     }
 }

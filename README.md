@@ -8,19 +8,19 @@ The wire format for a one-off webhook:
 
 ```
 {  
-    "callback" : "http://localhost:8080/callback",
+    "url" : "http://localhost:8080/test-webhook",
     "payload" : "foo"
 }
 ```
 
-Webhooks are stored in redis, and scanned every second. Once a webhook is triggered, you'll get a callback at the provided url with the given payload. Simple. 
+Webhooks are stored in redis, and scanned every second. Once a webhook is triggered, you'll get a POST at the provided url with the given payload. Simple. 
 
 Scheduling recurring webhooks is also supported, in the java fixed-delay ScheduledExecutorService style (not arbitrary cron expressions). 
 Provide the additional recurrence information using the same rest endpoint:
 
 ```
 {
-	"callback" : "http://localhost:8080/callback",
+	"url" : "http://localhost:8080/test-webhook",
 	"payload" : "foo",
 	"isRecurring" : true,
 	"delay" : 1, 
@@ -43,7 +43,7 @@ sh target/bin/scheduler
 Try it out: 
 ```
 curl -X POST -H "Content-Type: application/json" -d '{
-	"callback" : "http://localhost:8080/callback",
+	"url" : "http://localhost:8080/test-webhook",
 	"payload" : "foo"
 }' "http://localhost:8080/schedule"
 ```
@@ -52,7 +52,7 @@ Or a recurring webhook:
 
 ```
 curl -X POST -H "Content-Type: application/json"  -d '{
-	"callback" : "http://localhost:8080/callback",
+	"url" : "http://localhost:8080/test-webhook",
 	"payload" : "foo",
 	"isRecurring" : true,
 	"delay" : 1, 
@@ -61,4 +61,4 @@ curl -X POST -H "Content-Type: application/json"  -d '{
 }' "http://localhost:8080/schedule"
 ```
 
-The logs will contain output from the test callback endpoint (per execution): `payload = foo`
+The logs will contain output from the test url endpoint (per execution): `payload = foo`

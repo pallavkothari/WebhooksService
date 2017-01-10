@@ -66,7 +66,7 @@ public class HttpTests extends BaseHttpTests {
 
     @Test
     public void scheduleSomething() throws IOException, InterruptedException {
-        Webhook req = new Webhook(callbackUrl(), "myPayload", dequeueTimestamp);
+        Webhook req = new Webhook(testWebhookUrl(), "myPayload", dequeueTimestamp);
         try (ResponseBody body = schedule(req).body()) {
             Webhook resp = gson.fromJson(body.string(), Webhook.class);
             assertThat(req, is(resp));

@@ -24,8 +24,8 @@ public class RestEndpoints {
         return webhook;
     }
 
-    @RequestMapping(value = "/callback", method = RequestMethod.POST)
-    public String callback(@RequestBody String payload) {
+    @RequestMapping(value = "/test-webhook", method = RequestMethod.POST)
+    public String testHook(@RequestBody String payload) {
         System.out.println("payload = " + payload);
         return payload;
     }
