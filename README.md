@@ -9,7 +9,8 @@ The wire format for a one-off webhook:
 ```
 {  
     "url" : "http://localhost:8080/test-webhook",
-    "payload" : "foo"
+    "payload" : "foo",
+    "scheduledTime": 1484015175277      // in millis since epoch
 }
 ```
 
@@ -40,7 +41,7 @@ mvn install
 sh target/bin/scheduler
 ```
 
-Try it out: 
+Try it out. For a one-off, immediate webhook:  
 ```
 curl -X POST -H "Content-Type: application/json" -d '{
 	"url" : "http://localhost:8080/test-webhook",
