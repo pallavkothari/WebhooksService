@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/pallavkothari/WebhooksService.svg?branch=master)](https://travis-ci.org/pallavkothari/WebhooksService)
+
 # Webhooks Scheduler
 
 This is a redis-backed Webhooks-as-a-Service, which allows one to schedule one-off or recurring webhooks. 
