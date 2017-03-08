@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/pallavkothari/WebhooksService.svg?branch=master)](https://travis-ci.org/pallavkothari/WebhooksService) [![Coverage Status](https://coveralls.io/repos/github/pallavkothari/WebhooksService/badge.svg?branch=master)](https://coveralls.io/github/pallavkothari/WebhooksService?branch=master)
+[![Build Status](https://travis-ci.org/pallavkothari/WebhooksService.svg?branch=master)](https://travis-ci.org/pallavkothari/WebhooksService) [![Coverage Status](https://coveralls.io/repos/github/pallavkothari/WebhooksService/badge.png?branch=master)](https://coveralls.io/github/pallavkothari/WebhooksService?branch=master)
 
 # Webhooks Scheduler
 
