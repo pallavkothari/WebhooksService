@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/pallavkothari/WebhooksService.svg?branch=master)](https://travis-ci.org/pallavkothari/WebhooksService) [![Coverage Status](https://coveralls.io/repos/github/pallavkothari/WebhooksService/badge.svg?branch=master&foo)](https://coveralls.io/github/pallavkothari/WebhooksService?branch=master)
+![build status](https://github.com/pallavkothari/WebhooksService/actions/workflows/maven.yml/badge.svg)
+
 
 # Webhooks Scheduler
 
